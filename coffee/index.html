@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahve Dünyası - QR Menü</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .navbar {
+            background-color: #3E2723;
+        }
+        .coffee-card {
+            transition: transform 0.3s;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            height: 100%;
+        }
+        .coffee-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .coffee-img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #6f4e37;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+        .category-btn {
+            margin: 5px;
+        }
+        .order-summary {
+            background-color: #f1e8e0;
+            border-radius: 15px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+        }
+        .btn-coffee {
+            background-color: #6f4e37;
+            color: white;
+            border: none;
+        }
+        .btn-coffee:hover {
+            background-color: #5a3c29;
+            color: white;
+        }
+        .table-number {
+            background-color: #6f4e37;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-coffee me-2"></i>Kahve Dünyası
+            </a>
+            <div class="ms-auto">
+                <span class="text-white">Masa No: <span id="masaNo">5</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <div class="row">
+            <!-- Menü Section -->
+            <div class="col-lg-8">
+                <h2 class="mb-4">Kahve Menüsü</h2>
+                
+                <!-- Kategori Filtreleri -->
+                <div class="mb-4">
+                    <button class="btn btn-coffee category-btn active" data-category="all">Tümü</button>
+                    <button class="btn btn-outline-coffee category-btn" data-category="sıcak">Sıcak Kahveler</button>
+                    <button class="btn btn-outline-coffee category-btn" data-category="soğuk">Soğuk Kahveler</button>
+                    <button class="btn btn-outline-coffee category-btn" data-category="özel">Özel Kahveler</button>
+                </div>
+                
+                <!-- Kahve Listesi -->
+                <div class="row" id="coffeeMenu">
+                    <!-- Kahveler JavaScript ile eklenecek -->
+                </div>
+            </div>
+            
+            <!-- Sipariş Özeti -->
+            <div class="col-lg-4">
+                <div class="order-summary">
+                    <h3 class="text-center mb-4">Sipariş Özeti</h3>
+                    <div class="table-number">
+                        Masa: <span id="displayMasaNo">5</span>
+                    </div>
+                    
+                    <div id="orderItems">
+                        <!-- Sipariş edilen ürünler buraya eklenecek -->
+                        <p class="text-muted text-center">Henüz bir ürün eklemediniz.</p>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Ara Toplam:</span>
+                            <span id="subtotal">0 TL</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>KDV (%8):</span>
+                            <span id="tax">0 TL</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3 fw-bold">
+                            <span>Toplam:</span>
+                            <span id="total">0 TL</span>
+                        </div>
+                        
+                        <button class="btn btn-coffee w-100 mb-3" id="siparisVerBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Sipariş Ver
+                        </button>
+                        
+                        <button class="btn btn-success w-100" id="odemeYapBtn" data-bs-toggle="modal" data-bs-target="#odemeModal">
+                            <i class="fas fa-credit-card me-2"></i>Ödeme Yap
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ödeme Modal -->
+    <div class="modal fade" id="odemeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ödeme Yap</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Toplam Tutar</label>
+                        <input type="text" class="form-control" id="modalTotal" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ödeme Yöntemi</label>
+                        <select class="form-select" id="odemeYontemi">
+                            <option value="nakit">Nakit Ödeme</option>
+                            <option value="kredi">Kredi Kartı</option>
+                            <option value="tekçek">Tek Çek</option>
+                        </select>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="odemeyiOnayla">
+                        <label class="form-check-label" for="odemeyiOnayla">
+                            Ödemeyi onaylıyorum
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-success" id="confirmPayment">Ödemeyi Tamamla</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sipariş Onay Modal -->
+    <div class="modal fade" id="siparisOnayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sipariş Onayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span id="siparisOnayMesaji">Siparişiniz başarıyla alındı!</span>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-coffee" data-bs-dismiss="modal">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Kahve verileri
+        const coffees = [
+            { id: 1, name: "Espresso", price: 120, category: "sıcak", image: "https://via.placeholder.com/300x200/6f4e37/ffffff?text=Espresso" },
+            { id: 2, name: "Americano", price: 130, category: "sıcak", image: "https://via.placeholder.com/300x200/6f4e37/ffffff?text=Americano" },
+            { id: 3, name: "Cappuccino", price: 150, category: "sıcak", image: "https://via.placeholder.com/300x200/6f4e37/ffffff?text=Cappuccino" },
+            { id: 4, name: "Latte", price: 170, category: "sıcak", image: "https://via.placeholder.com/300x200/6f4e37/ffffff?text=Latte" },
+            { id: 5, name: "Mocha", price: 180, category: "sıcak", image: "https://via.placeholder.com/300x200/6f4e37/ffffff?text=Mocha" },
+            { id: 6, name: "Türk Kahvesi", price: 130, category: "sıcak", image: "https://via.placeholder.com/300x200/6f4e37/ffffff?text=Türk+Kahvesi" },
+            { id: 7, name: "Soğuk Brew", price: 190, category: "soğuk", image: "https://via.placeholder.com/300x200/3E2723/ffffff?text=Soğuk+Brew" },
+            { id: 8, name: "Buzlu Latte", price: 180, category: "soğuk", image: "https://via.placeholder.com/300x200/3E2723/ffffff?text=Buzlu+Latte" },
+            { id: 9, name: "Frappuccino", price: 200, category: "soğuk", image: "https://via.placeholder.com/300x200/3E2723/ffffff?text=Frappuccino" },
+            { id: 10, name: "Macchiato", price: 160, category: "özel", image: "https://via.placeholder.com/300x200/8D6E63/ffffff?text=Macchiato" },
+            { id: 11, name: "Affogato", price: 200, category: "özel", image: "https://via.placeholder.com/300x200/8D6E63/ffffff?text=Affogato" },
+            { id: 12, name: "Irish Coffee", price: 190, category: "özel", image: "https://via.placeholder.com/300x200/8D6E63/ffffff?text=Irish+Coffee" }
+        ];
+
+        // Sepet ve sipariş bilgileri
+        let cart = [];
+        let tableNumber = 5; // Varsayılan masa numarası
+
+        // URL parametrelerinden masa numarasını al
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            const masa = params.get('masa');
+            if (masa) {
+                tableNumber = parseInt(masa);
+                document.getElementById('masaNo').textContent = tableNumber;
+                document.getElementById('displayMasaNo').textContent = tableNumber;
+            }
+        }
+
+        // Kahve menüsünü oluştur
+        function renderCoffeeMenu() {
+            const coffeeMenu = document.getElementById('coffeeMenu');
+            coffeeMenu.innerHTML = '';
+            
+            coffees.forEach(coffee => {
+                const coffeeCard = `
+                    <div class="col-md-6 col-lg-4 mb-4" data-category="${coffee.category}">
+                        <div class="coffee-card card">
+                            <div class="position-relative">
+                                <img src="${coffee.image}" class="coffee-img card-img-top" alt="${coffee.name}">
+                                <div class="price-tag">${coffee.price} TL</div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${coffee.name}</h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">${coffee.price} TL</span>
+                                    <button class="btn btn-coffee add-to-cart" data-id="${coffee.id}">
+                                        <i class="fas fa-plus"></i> Ekle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                coffeeMenu.innerHTML += coffeeCard;
+            });
+            
+            // Sepete ekleme event listener'ları
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const coffeeId = parseInt(this.getAttribute('data-id'));
+                    addToCart(coffeeId);
+                });
+            });
+        }
+
+        // Sepete ürün ekle
+        function addToCart(coffeeId) {
+            const coffee = coffees.find(c => c.id === coffeeId);
+            const existingItem = cart.find(item => item.id === coffeeId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: coffee.id,
+                    name: coffee.name,
+                    price: coffee.price,
+                    quantity: 1
+                });
+            }
+            
+            updateOrderSummary();
+            
+            // Bildirim göster
+            showNotification(`${coffee.name} sepete eklendi!`);
+        }
+
+        // Sipariş özetini güncelle
+        function updateOrderSummary() {
+            const orderItems = document.getElementById('orderItems');
+            const subtotalElement = document.getElementById('subtotal');
+            const taxElement = document.getElementById('tax');
+            const totalElement = document.getElementById('total');
+            const modalTotalElement = document.getElementById('modalTotal');
+            
+            if (cart.length === 0) {
+                orderItems.innerHTML = '<p class="text-muted text-center">Henüz bir ürün eklemediniz.</p>';
+                subtotalElement.textContent = '0 TL';
+                taxElement.textContent = '0 TL';
+                totalElement.textContent = '0 TL';
+                modalTotalElement.value = '0 TL';
+                return;
+            }
+            
+            let subtotal = 0;
+            let orderHTML = '';
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                orderHTML += `
+                    <div class="d-flex justify-content-between align-items-center mb-2 p-2 border-bottom">
+                        <div>
+                            <span class="fw-bold">${item.name}</span>
+                            <br>
+                            <small>${item.price} TL x ${item.quantity}</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <span class="me-2 fw-bold">${itemTotal} TL</span>
+                            <button class="btn btn-sm btn-outline-secondary quantity-btn decrease" data-id="${item.id}">-</button>
+                            <span class="mx-2">${item.quantity}</span>
+                            <button class="btn btn-sm btn-outline-secondary quantity-btn increase" data-id="${item.id}">+</button>
+                            <button class="btn btn-sm btn-outline-danger ms-2 remove" data-id="${item.id}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            orderItems.innerHTML = orderHTML;
+            
+            const tax = subtotal * 0.08;
+            const total = subtotal + tax;
+            
+            subtotalElement.textContent = `${subtotal.toFixed(2)} TL`;
+            taxElement.textContent = `${tax.toFixed(2)} TL`;
+            totalElement.textContent = `${total.toFixed(2)} TL`;
+            modalTotalElement.value = `${total.toFixed(2)} TL`;
+            
+            // Miktar butonları için event listener'ları ekle
+            document.querySelectorAll('.increase').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    increaseQuantity(id);
+                });
+            });
+            
+            document.querySelectorAll('.decrease').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    decreaseQuantity(id);
+                });
+            });
+            
+            document.querySelectorAll('.remove').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    removeFromCart(id);
+                });
+            });
+        }
+
+        // Ürün miktarını artır
+        function increaseQuantity(coffeeId) {
+            const item = cart.find(item => item.id === coffeeId);
+            if (item) {
+                item.quantity += 1;
+                updateOrderSummary();
+            }
+        }
+
+        // Ürün miktarını azalt
+        function decreaseQuantity(coffeeId) {
+            const item = cart.find(item => item.id === coffeeId);
+            if (item) {
+                item.quantity -= 1;
+                if (item.quantity === 0) {
+                    removeFromCart(coffeeId);
+                } else {
+                    updateOrderSummary();
+                }
+            }
+        }
+
+        // Ürünü sepetten kaldır
+        function removeFromCart(coffeeId) {
+            cart = cart.filter(item => item.id !== coffeeId);
+            updateOrderSummary();
+            showNotification('Ürün sepetten kaldırıldı.');
+        }
+
+        // Bildirim göster
+        function showNotification(message) {
+            // Basit bir bildirim oluştur
+            const notification = document.createElement('div');
+            notification.className = 'position-fixed bottom-0 end-0 m-3 alert alert-success';
+            notification.textContent = message;
+            notification.style.zIndex = '1050';
+            
+            document.body.appendChild(notification);
+            
+            // 3 saniye sonra bildirimi kaldır
+            setTimeout(() => {
+                notification.remove();
+            }, 3000);
+        }
+
+        // Kategori filtreleme
+        function setupCategoryFilters() {
+            document.querySelectorAll('.category-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Aktif butonu güncelle
+                    document.querySelectorAll('.category-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.add('btn-outline-coffee');
+                    });
+                    this.classList.add('active');
+                    this.classList.remove('btn-outline-coffee');
+                    
+                    const category = this.getAttribute('data-category');
+                    filterCoffeeByCategory(category);
+                });
+            });
+        }
+
+        // Kahveleri kategoriye göre filtrele
+        function filterCoffeeByCategory(category) {
+            const coffeeItems = document.querySelectorAll('#coffeeMenu > div');
+            
+            coffeeItems.forEach(item => {
+                if (category === 'all' || item.getAttribute('data-category') === category) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Sipariş ver butonu
+        function setupOrderButton() {
+            document.getElementById('siparisVerBtn').addEventListener('click', function() {
+                if (cart.length === 0) {
+                    showNotification('Lütfen önce ürün ekleyin!');
+                    return;
+                }
+                
+                // Burada siparişi sunucuya gönderme işlemi yapılır
+                // Şimdilik sadece başarılı mesajı gösterelim
+                const siparisOnayModal = new bootstrap.Modal(document.getElementById('siparisOnayModal'));
+                document.getElementById('siparisOnayMesaji').textContent = 
+                    `Masa ${tableNumber} için siparişiniz alındı! Hazırlanma süresi: ${cart.length * 5} dakika.`;
+                siparisOnayModal.show();
+                
+                // Siparişi temizle (gerçek uygulamada ödeme yapılana kadar temizlenmemeli)
+                // cart = [];
+                // updateOrderSummary();
+            });
+        }
+
+        // Ödeme butonu
+        function setupPaymentButton() {
+            document.getElementById('confirmPayment').addEventListener('click', function() {
+                const onayla = document.getElementById('odemeyiOnayla').checked;
+                if (!onayla) {
+                    showNotification('Lütfen ödeme onayını işaretleyin!');
+                    return;
+                }
+                
+                // Ödeme işlemi başarılı
+                const odemeModal = bootstrap.Modal.getInstance(document.getElementById('odemeModal'));
+                odemeModal.hide();
+                
+                showNotification('Ödeme başarıyla tamamlandı!');
+                
+                // Siparişi temizle
+                cart = [];
+                updateOrderSummary();
+                
+                // Ödeme onay kutusunu sıfırla
+                document.getElementById('odemeyiOnayla').checked = false;
+            });
+        }
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            getQueryParams();
+            renderCoffeeMenu();
+            setupCategoryFilters();
+            setupOrderButton();
+            setupPaymentButton();
+            
+            // Ödeme modalı açıldığında toplam tutarı güncelle
+            document.getElementById('odemeModal').addEventListener('show.bs.modal', function() {
+                const totalElement = document.getElementById('total');
+                document.getElementById('modalTotal').value = totalElement.textContent;
+            });
+        });
+    </script>
+</body>
+</html>
