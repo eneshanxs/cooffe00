@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kahve Dünyası - QR Menü</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #6f4e37;
+            --secondary-color: #3E2723;
+            --accent-color: #8D6E63;
+            --light-bg: #f1e8e0;
+        }
+        
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding-bottom: 60px;
+        }
+        .navbar {
+            background-color: var(--secondary-color);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .product-card {
+            transition: all 0.3s ease;
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.08);
+            height: 100%;
+            background: white;
+        }
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0,0,0,0.15);
+        }
+        .product-img {
+            height: 200px;
+            object-fit: cover;
+            transition: transform 0.5s ease;
+        }
+        .product-card:hover .product-img {
+            transform: scale(1.05);
+        }
+        .price-tag {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--primary-color);
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+        }
+        .category-btn {
+            margin: 5px;
+            border-radius: 20px;
+            padding: 8px 16px;
+        }
+        .order-summary {
+            background-color: var(--light-bg);
+            border-radius: 15px;
+            padding: 20px;
+            position: sticky;
+            top: 20px;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+        }
+        .btn-primary {
+            background-color: var(--primary-color);
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            background-color: #5a3c29;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        .btn-outline-primary {
+            color: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        .btn-outline-primary:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .btn-outline-primary.active {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        .table-number {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 30px;
+            display: inline-block;
+            margin-bottom: 20px;
+            font-weight: bold;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .quantity-btn {
+            width: 30px;
+            height: 30px;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+        }
+        .category-icon {
+            font-size: 1.2rem;
+            margin-right: 5px;
+        }
+        .order-item {
+            border-bottom: 1px solid #ddd;
+            padding: 12px 0;
+            transition: background-color 0.2s ease;
+        }
+        .order-item:hover {
+            background-color: rgba(0,0,0,0.03);
+            border-radius: 8px;
+        }
+        .badge-category {
+            background: var(--accent-color);
+            color: white;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            margin-left: 5px;
+        }
+        .receipt {
+            font-family: 'Courier New', monospace;
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 15px;
+            border-bottom: 1px dashed #333;
+            padding-bottom: 10px;
+        }
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: #fff;
+            animation: spin 1s ease-in-out infinite;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+        .search-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+        .search-container input {
+            border-radius: 25px;
+            padding-left: 45px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .search-container i {
+            position: absolute;
+            left: 15px;
+            top: 12px;
+            color: #6c757d;
+        }
+        .floating-cart {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: var(--primary-color);
+            color: white;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .floating-cart:hover {
+            transform: scale(1.1);
+        }
+        .cart-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #dc3545;
+            color: white;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 40px 0;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            color: #dee2e6;
+        }
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 30px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 1050;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .recommended-badge {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #ff6b6b;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-coffee me-2"></i>Kahve Dünyası
+            </a>
+            <div class="ms-auto">
+                <span class="text-white me-3">Masa No: <span id="masaNo">5</span></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Ana İçerik -->
+    <div class="container my-5" id="mainContainer">
+        <div class="row">
+            <!-- Menü Section -->
+            <div class="col-lg-8">
+                <h2 class="mb-4">Menü</h2>
+                
+                <!-- Arama Kutusu -->
+                <div class="search-container">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="searchInput" class="form-control" placeholder="Ürün ara...">
+                </div>
+                
+                <!-- Kategori Filtreleri -->
+                <div class="mb-4 d-flex flex-wrap">
+                    <button class="btn btn-primary category-btn active" data-category="all">
+                        <i class="fas fa-th category-icon"></i>Tümü
+                    </button>
+                    <button class="btn btn-outline-primary category-btn" data-category="kahve">
+                        <i class="fas fa-coffee category-icon"></i>Kahveler
+                    </button>
+                    <button class="btn btn-outline-primary category-btn" data-category="çay">
+                        <i class="fas fa-mug-hot category-icon"></i>Çaylar
+                    </button>
+                    <button class="btn btn-outline-primary category-btn" data-category="soğuk">
+                        <i class="fas fa-glass-whiskey category-icon"></i>Soğuk İçecekler
+                    </button>
+                    <button class="btn btn-outline-primary category-btn" data-category="atıştırmalık">
+                        <i class="fas fa-cookie category-icon"></i>Atıştırmalıklar
+                    </button>
+                    <button class="btn btn-outline-primary category-btn" data-category="enerji">
+                        <i class="fas fa-bolt category-icon"></i>Enerji İçecekleri
+                    </button>
+                </div>
+                
+                <!-- Ürün Listesi -->
+                <div class="row" id="productMenu">
+                    <!-- JavaScript ile doldurulacak -->
+                </div>
+            </div>
+            
+            <!-- Sipariş Özeti -->
+            <div class="col-lg-4">
+                <div class="order-summary">
+                    <h3 class="text-center mb-4">Sipariş Özeti</h3>
+                    <div class="table-number">
+                        Masa: <span id="displayMasaNo">5</span>
+                    </div>
+                    
+                    <div id="orderItems">
+                        <div class="empty-state">
+                            <i class="fas fa-shopping-cart"></i>
+                            <p>Henüz bir ürün eklemediniz.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Ara Toplam:</span>
+                            <span id="subtotal">0 TL</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-3">
+                            <span>KDV (%8):</span>
+                            <span id="tax">0 TL</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between mb-3 fw-bold">
+                            <span>Toplam:</span>
+                            <span id="total">0 TL</span>
+                        </div>
+                        
+                        <button class="btn btn-primary w-100 mb-3" id="siparisVerBtn">
+                            <i class="fas fa-paper-plane me-2"></i>Sipariş Ver
+                        </button>
+                        
+                        <button class="btn btn-success w-100" id="odemeYapBtn" data-bs-toggle="modal" data-bs-target="#odemeModal">
+                            <i class="fas fa-credit-card me-2"></i>Ödeme Yap
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating Cart Button (Mobil için) -->
+    <div class="floating-cart d-lg-none" data-bs-toggle="offcanvas" data-bs-target="#orderSummaryOffcanvas">
+        <i class="fas fa-shopping-cart"></i>
+        <span class="cart-badge" id="cartBadge">0</span>
+    </div>
+
+    <!-- Offcanvas for Mobile Order Summary -->
+    <div class="offcanvas offcanvas-end" tabindex="-1" id="orderSummaryOffcanvas">
+        <div class="offcanvas-header">
+            <h5 class="offcanvas-title">Sipariş Özeti</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+        </div>
+        <div class="offcanvas-body">
+            <div id="offcanvasOrderItems">
+                <div class="empty-state">
+                    <i class="fas fa-shopping-cart"></i>
+                    <p>Henüz bir ürün eklemediniz.</p>
+                </div>
+            </div>
+            <div class="mt-auto">
+                <div class="d-flex justify-content-between mb-2">
+                    <span>Ara Toplam:</span>
+                    <span id="offcanvasSubtotal">0 TL</span>
+                </div>
+                <div class="d-flex justify-content-between mb-3">
+                    <span>KDV (%8):</span>
+                    <span id="offcanvasTax">0 TL</span>
+                </div>
+                <hr>
+                <div class="d-flex justify-content-between mb-3 fw-bold">
+                    <span>Toplam:</span>
+                    <span id="offcanvasTotal">0 TL</span>
+                </div>
+                
+                <button class="btn btn-primary w-100 mb-3" id="offcanvasSiparisVerBtn">
+                    <i class="fas fa-paper-plane me-2"></i>Sipariş Ver
+                </button>
+                
+                <button class="btn btn-success w-100" id="offcanvasOdemeYapBtn" data-bs-toggle="modal" data-bs-target="#odemeModal">
+                    <i class="fas fa-credit-card me-2"></i>Ödeme Yap
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Ödeme Modal -->
+    <div class="modal fade" id="odemeModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ödeme Yap</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Toplam Tutar</label>
+                        <input type="text" class="form-control" id="modalTotal" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ödeme Yöntemi</label>
+                        <select class="form-select" id="odemeYontemi">
+                            <option value="nakit">Nakit Ödeme</option>
+                            <option value="kredi">Kredi Kartı</option>
+                            <option value="tekçek">Tek Çek</option>
+                        </select>
+                    </div>
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="odemeyiOnayla">
+                        <label class="form-check-label" for="odemeyiOnayla">
+                            Ödemeyi onaylıyorum
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                    <button type="button" class="btn btn-success" id="confirmPayment">
+                        <span id="paymentText">Ödemeyi Tamamla</span>
+                        <span id="paymentSpinner" class="loading" style="display: none;"></span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sipariş Onay Modal -->
+    <div class="modal fade" id="siparisOnayModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Sipariş Onayı</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-2"></i>
+                        <span id="siparisOnayMesaji">Siparişiniz başarıyla alındı!</span>
+                    </div>
+                    <div class="receipt mt-3 p-3 bg-light" id="receiptContent">
+                        <!-- Fiş içeriği buraya gelecek -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Tamam</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ürün verileri
+        let products = [];
+
+        // Sepet ve sipariş bilgileri
+        let cart = [];
+        let tableNumber = 5; // Varsayılan masa numarası
+
+        // Sayfa yüklendiğinde
+        document.addEventListener('DOMContentLoaded', function() {
+            getQueryParams();
+            fetchProducts();
+            setupEventListeners();
+        });
+
+        // Event listener'ları kur
+        function setupEventListeners() {
+            // Sipariş ver butonu
+            document.getElementById('siparisVerBtn').addEventListener('click', submitOrder);
+            document.getElementById('offcanvasSiparisVerBtn').addEventListener('click', submitOrder);
+            
+            // Ödeme butonu
+            document.getElementById('confirmPayment').addEventListener('click', processPayment);
+            document.getElementById('offcanvasOdemeYapBtn').addEventListener('click', function() {
+                $('#odemeModal').modal('show');
+            });
+            
+            // Ödeme modalı açıldığında toplam tutarı güncelle
+            document.getElementById('odemeModal').addEventListener('show.bs.modal', function() {
+                const totalElement = document.getElementById('total');
+                document.getElementById('modalTotal').value = totalElement.textContent;
+            });
+            
+            // Arama kutusu
+            document.getElementById('searchInput').addEventListener('input', function(e) {
+                filterProducts(e.target.value);
+            });
+        }
+
+        // URL parametrelerinden masa numarasını al
+        function getQueryParams() {
+            const params = new URLSearchParams(window.location.search);
+            const masa = params.get('masa');
+            if (masa) {
+                tableNumber = parseInt(masa);
+                document.getElementById('masaNo').textContent = tableNumber;
+                document.getElementById('displayMasaNo').textContent = tableNumber;
+            }
+        }
+
+        // Ürünleri getir
+        function fetchProducts() {
+            try {
+                // Örnek ürünler
+                products = [
+                    // Kahveler
+                    { id: 1, name: "Espresso", price: 120, category: "kahve", image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", recommended: true },
+                    { id: 2, name: "Americano", price: 130, category: "kahve", image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 3, name: "Cappuccino", price: 150, category: "kahve", image: "https://images.unsplash.com/photo-1561047029-3000c68339ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", recommended: true },
+                    { id: 4, name: "Latte", price: 170, category: "kahve", image: "https://images.unsplash.com/photo-1561047029-3000c68339ca?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 5, name: "Mocha", price: 180, category: "kahve", image: "https://images.unsplash.com/photo-1572442388796-11668a67e53d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 6, name: "Türk Kahvesi", price: 130, category: "kahve", image: "https://images.unsplash.com/photo-1593443320739-77b5f6f5eecb?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", recommended: true },
+                    
+                    // Çaylar
+                    { id: 7, name: "Siyah Çay", price: 80, category: "çay", image: "https://images.unsplash.com/photo-1556679343-c7306c1976bc?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 8, name: "Yeşil Çay", price: 90, category: "çay", image: "https://images.unsplash.com/photo-1544787219-7f47ccb76574?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 9, name: "Bitki Çayı", price: 100, category: "çay", image: "https://images.unsplash.com/photo-1559056199-641a0ac8b55e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 10, name: "Meyve Çayı", price: 100, category: "çay", image: "https://images.unsplash.com/photo-1571934811356-5cc061b6821f?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    
+                    // Soğuk İçecekler
+                    { id: 11, name: "Soğuk Brew", price: 190, category: "soğuk", image: "https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 12, name: "Buzlu Latte", price: 180, category: "soğuk", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", recommended: true },
+                    { id: 13, name: "Frappuccino", price: 200, category: "soğuk", image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 14, name: "Limonata", price: 120, category: "soğuk", image: "https://images.unsplash.com/photo-1621506289937-a8e4df240d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 15, name: "Meyve Suyu", price: 110, category: "soğuk", image: "https://images.unsplash.com/photo-1613478223719-2ab802602423?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 16, name: "Su (500ml)", price: 40, category: "soğuk", image: "https://images.unsplash.com/photo-1548839140-29a749e3d6d3?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    
+                    // Atıştırmalıklar
+                    { id: 17, name: "Çikolatalı Kurabiye", price: 90, category: "atıştırmalık", image: "https://images.unsplash.com/photo-1499636136210-6f4ee915583e?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80", recommended: true },
+                    { id: 18, name: "Browni", price: 120, category: "atıştırmalık", image: "https://images.unsplash.com/photo-1606313564200-e75d5e30476c?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 19, name: "Cheesecake", price: 150, category: "atıştırmalık", image: "https://images.unsplash.com/photo-1524351199678-941a58a3df50?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 20, name: "Sandviç", price: 160, category: "atıştırmalık", image: "https://images.unsplash.com/photo-1485451456034-3f9391c6f769?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 21, name: "Simit", price: 70, category: "atıştırmalık", image: "https://images.unsplash.com/photo-1583337130416-5bf34d10b308?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    
+                    // Enerji İçecekleri
+                    { id: 22, name: "Red Bull", price: 180, category: "enerji", image: "https://images.unsplash.com/photo-1591261730799-0491b6aa3baa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 23, name: "Monster", price: 190, category: "enerji", image: "https://images.unsplash.com/photo-1629203851122-3726ecdf080d?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" },
+                    { id: 24, name: "Burn", price: 170, category: "enerji", image: "https://images.unsplash.com/photo-1591261730799-0491b6aa3baa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=80" }
+                ];
+                
+                renderProductMenu();
+                setupCategoryFilters();
+                
+            } catch (error) {
+                console.error('Ürünler yüklenirken hata oluştu:', error);
+                document.getElementById('productMenu').innerHTML = `
+                    <div class="col-12 text-center">
+                        <div class="alert alert-danger">
+                            Ürünler yüklenirken bir hata oluştu. Lütfen sayfayı yenileyin.
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // Ürün menüsünü oluştur
+        function renderProductMenu() {
+            const productMenu = document.getElementById('productMenu');
+            productMenu.innerHTML = '';
+            
+            if (products.length === 0) {
+                productMenu.innerHTML = `
+                    <div class="col-12">
+                        <div class="empty-state">
+                            <i class="fas fa-coffee"></i>
+                            <p>Menü yükleniyor...</p>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+            
+            products.forEach((product, index) => {
+                const productCard = `
+                    <div class="col-md-6 col-lg-4 mb-4 fade-in" data-category="${product.category}" data-name="${product.name.toLowerCase()}" style="animation-delay: ${index * 0.05}s">
+                        <div class="product-card card">
+                            <div class="position-relative">
+                                <img src="${product.image}" class="product-img card-img-top" alt="${product.name}">
+                                <div class="price-tag">${product.price} TL</div>
+                                ${product.recommended ? '<div class="recommended-badge">Önerilen</div>' : ''}
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">${product.name} <span class="badge-category">${getCategoryName(product.category)}</span></h5>
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <span class="fw-bold">${product.price} TL</span>
+                                    <button class="btn btn-primary add-to-cart" data-id="${product.id}">
+                                        <i class="fas fa-plus"></i> Ekle
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                productMenu.innerHTML += productCard;
+            });
+            
+            // Sepete ekleme event listener'ları
+            document.querySelectorAll('.add-to-cart').forEach(button => {
+                button.addEventListener('click', function() {
+                    const productId = parseInt(this.getAttribute('data-id'));
+                    addToCart(productId);
+                });
+            });
+        }
+
+        // Ürünleri filtrele
+        function filterProducts(searchTerm) {
+            const productItems = document.querySelectorAll('#productMenu > div');
+            const term = searchTerm.toLowerCase().trim();
+            
+            productItems.forEach(item => {
+                const productName = item.getAttribute('data-name');
+                if (term === '' || productName.includes(term)) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Kategori adını Türkçe olarak döndür
+        function getCategoryName(category) {
+            const categories = {
+                'kahve': 'Kahve',
+                'çay': 'Çay',
+                'soğuk': 'Soğuk',
+                'atıştırmalık': 'Atıştırmalık',
+                'enerji': 'Enerji'
+            };
+            return categories[category] || category;
+        }
+
+        // Sepete ürün ekle
+        function addToCart(productId) {
+            const product = products.find(p => p.id === productId);
+            const existingItem = cart.find(item => item.id === productId);
+            
+            if (existingItem) {
+                existingItem.quantity += 1;
+            } else {
+                cart.push({
+                    id: product.id,
+                    name: product.name,
+                    price: product.price,
+                    category: product.category,
+                    quantity: 1
+                });
+            }
+            
+            updateOrderSummary();
+            
+            // Bildirim göster
+            showNotification(`${product.name} sepete eklendi!`);
+        }
+
+        // Sipariş özetini güncelle
+        function updateOrderSummary() {
+            const orderItems = document.getElementById('orderItems');
+            const offcanvasOrderItems = document.getElementById('offcanvasOrderItems');
+            const subtotalElement = document.getElementById('subtotal');
+            const taxElement = document.getElementById('tax');
+            const totalElement = document.getElementById('total');
+            const offcanvasSubtotal = document.getElementById('offcanvasSubtotal');
+            const offcanvasTax = document.getElementById('offcanvasTax');
+            const offcanvasTotal = document.getElementById('offcanvasTotal');
+            const modalTotalElement = document.getElementById('modalTotal');
+            const cartBadge = document.getElementById('cartBadge');
+            
+            // Sepet badge'ini güncelle
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartBadge.textContent = totalItems;
+            
+            if (cart.length === 0) {
+                orderItems.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Henüz bir ürün eklemediniz.</p></div>';
+                offcanvasOrderItems.innerHTML = '<div class="empty-state"><i class="fas fa-shopping-cart"></i><p>Henüz bir ürün eklemediniz.</p></div>';
+                subtotalElement.textContent = '0 TL';
+                taxElement.textContent = '0 TL';
+                totalElement.textContent = '0 TL';
+                offcanvasSubtotal.textContent = '0 TL';
+                offcanvasTax.textContent = '0 TL';
+                offcanvasTotal.textContent = '0 TL';
+                modalTotalElement.value = '0 TL';
+                return;
+            }
+            
+            let subtotal = 0;
+            let orderHTML = '';
+            
+            cart.forEach(item => {
+                const itemTotal = item.price * item.quantity;
+                subtotal += itemTotal;
+                
+                orderHTML += `
+                    <div class="order-item">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="fw-bold">${item.name}</span>
+                                <br>
+                                <small>${item.price} TL x ${item.quantity}</small>
+                            </div>
+                            <div class="d-flex align-items-center">
+                                <span class="me-2 fw-bold">${itemTotal} TL</span>
+                                <button class="btn btn-sm btn-outline-secondary quantity-btn decrease" data-id="${item.id}">-</button>
+                                <span class="mx-2">${item.quantity}</span>
+                                <button class="btn btn-sm btn-outline-secondary quantity-btn increase" data-id="${item.id}">+</button>
+                                <button class="btn btn-sm btn-outline-danger ms-2 remove" data-id="${item.id}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            orderItems.innerHTML = orderHTML;
+            offcanvasOrderItems.innerHTML = orderHTML;
+            
+            const tax = subtotal * 0.08;
+            const total = subtotal + tax;
+            
+            subtotalElement.textContent = `${subtotal.toFixed(2)} TL`;
+            taxElement.textContent = `${tax.toFixed(2)} TL`;
+            totalElement.textContent = `${total.toFixed(2)} TL`;
+            offcanvasSubtotal.textContent = `${subtotal.toFixed(2)} TL`;
+            offcanvasTax.textContent = `${tax.toFixed(2)} TL`;
+            offcanvasTotal.textContent = `${total.toFixed(2)} TL`;
+            modalTotalElement.value = `${total.toFixed(2)} TL`;
+            
+            // Miktar butonları için event listener'ları ekle
+            document.querySelectorAll('.increase').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    increaseQuantity(id);
+                });
+            });
+            
+            document.querySelectorAll('.decrease').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    decreaseQuantity(id);
+                });
+            });
+            
+            document.querySelectorAll('.remove').forEach(button => {
+                button.addEventListener('click', function() {
+                    const id = parseInt(this.getAttribute('data-id'));
+                    removeFromCart(id);
+                });
+            });
+        }
+
+        // Ürün miktarını artır
+        function increaseQuantity(productId) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity += 1;
+                updateOrderSummary();
+            }
+        }
+
+        // Ürün miktarını azalt
+        function decreaseQuantity(productId) {
+            const item = cart.find(item => item.id === productId);
+            if (item) {
+                item.quantity -= 1;
+                if (item.quantity === 0) {
+                    removeFromCart(productId);
+                } else {
+                    updateOrderSummary();
+                }
+            }
+        }
+
+        // Ürünü sepetten kaldır
+        function removeFromCart(productId) {
+            cart = cart.filter(item => item.id !== productId);
+            updateOrderSummary();
+            showNotification('Ürün sepetten kaldırıldı.');
+        }
+
+        // Bildirim göster
+        function showNotification(message) {
+            // Toast bildirimi oluştur
+            const toast = document.createElement('div');
+            toast.className = 'toast-notification';
+            toast.innerHTML = `
+                <i class="fas fa-check-circle"></i>
+                <span>${message}</span>
+            `;
+            
+            document.body.appendChild(toast);
+            
+            // 3 saniye sonra bildirimi kaldır
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        // Kategori filtreleme
+        function setupCategoryFilters() {
+            document.querySelectorAll('.category-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    // Aktif butonu güncelle
+                    document.querySelectorAll('.category-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                        btn.classList.remove('btn-primary');
+                        btn.classList.add('btn-outline-primary');
+                    });
+                    this.classList.add('active');
+                    this.classList.remove('btn-outline-primary');
+                    this.classList.add('btn-primary');
+                    
+                    const category = this.getAttribute('data-category');
+                    filterProductsByCategory(category);
+                });
+            });
+        }
+
+        // Ürünleri kategoriye göre filtrele
+        function filterProductsByCategory(category) {
+            const productItems = document.querySelectorAll('#productMenu > div');
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+            
+            productItems.forEach(item => {
+                const itemCategory = item.getAttribute('data-category');
+                const productName = item.getAttribute('data-name');
+                
+                const categoryMatch = category === 'all' || itemCategory === category;
+                const searchMatch = searchTerm === '' || productName.includes(searchTerm);
+                
+                if (categoryMatch && searchMatch) {
+                    item.style.display = 'block';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        // Fiş oluştur
+        function generateReceipt() {
+            let receiptHTML = `
+                <div class="receipt-header">
+                    <h5>Kahve Dünyası</h5>
+                    <p>Masa: ${tableNumber}</p>
+                    <p>Tarih: ${new Date().toLocaleString('tr-TR')}</p>
+                </div>
+            `;
+            
+            cart.forEach(item => {
+                receiptHTML += `
+                    <div class="d-flex justify-content-between">
+                        <span>${item.name} x${item.quantity}</span>
+                        <span>${(item.price * item.quantity).toFixed(2)} TL</span>
+                    </div>
+                `;
+            });
+            
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            const total = subtotal + tax;
+            
+            receiptHTML += `
+                <hr>
+                <div class="d-flex justify-content-between">
+                    <span>Ara Toplam:</span>
+                    <span>${subtotal.toFixed(2)} TL</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span>KDV (%8):</span>
+                    <span>${tax.toFixed(2)} TL</span>
+                </div>
+                <div class="d-flex justify-content-between fw-bold">
+                    <span>Toplam:</span>
+                    <span>${total.toFixed(2)} TL</span>
+                </div>
+                <hr>
+                <p class="text-center">Teşekkür Ederiz!</p>
+            `;
+            
+            return receiptHTML;
+        }
+
+        // Sipariş gönder
+        async function submitOrder() {
+            if (cart.length === 0) {
+                showNotification('Lütfen önce ürün ekleyin!');
+                return;
+            }
+            
+            try {
+                // Fiş oluştur
+                document.getElementById('receiptContent').innerHTML = generateReceipt();
+                
+                // Sipariş onay modalını göster
+                const siparisOnayModal = new bootstrap.Modal(document.getElementById('siparisOnayModal'));
+                document.getElementById('siparisOnayMesaji').textContent = 
+                    `Masa ${tableNumber} için siparişiniz alındı! Hazırlanma süresi: ${cart.length * 5} dakika.`;
+                siparisOnayModal.show();
+                
+            } catch (error) {
+                console.error('Sipariş gönderilirken hata oluştu:', error);
+                showNotification('Sipariş gönderilirken bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+        
+
+        // Ödeme işlemi
+        async function processPayment() {
+            const onayla = document.getElementById('odemeyiOnayla').checked;
+            if (!onayla) {
+                showNotification('Lütfen ödeme onayını işaretleyin!');
+                return;
+            }
+            
+            const paymentText = document.getElementById('paymentText');
+            const paymentSpinner = document.getElementById('paymentSpinner');
+            
+            // Yükleme göstergesini göster
+            paymentText.style.display = 'none';
+            paymentSpinner.style.display = 'inline-block';
+            
+            try {
+                // Örnek başarılı senaryo
+                setTimeout(() => {
+                    paymentText.style.display = 'inline';
+                    paymentSpinner.style.display = 'none';
+                    
+                    const odemeModal = bootstrap.Modal.getInstance(document.getElementById('odemeModal'));
+                    odemeModal.hide();
+                    
+                    showNotification('Ödeme başarıyla tamamlandı!');
+                    document.getElementById('receiptContent').innerHTML = generateReceipt();
+                    const siparisOnayModal = new bootstrap.Modal(document.getElementById('siparisOnayModal'));
+                    document.getElementById('siparisOnayMesaji').textContent = 'Ödemeniz başarıyla tamamlandı!';
+                    siparisOnayModal.show();
+                    cart = [];
+                    updateOrderSummary();
+                }, 1500);
+                
+            } catch (error) {
+                console.error('Ödeme işlemi sırasında hata oluştu:', error);
+                paymentText.style.display = 'inline';
+                paymentSpinner.style.display = 'none';
+                showNotification('Ödeme işlemi sırasında bir hata oluştu. Lütfen tekrar deneyin.');
+            }
+        }
+
+        // Toplam tutarı hesapla
+        function calculateTotal() {
+            const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+            const tax = subtotal * 0.08;
+            return subtotal + tax;
+        }
+    </script>
+    
+</body>
+</html>
